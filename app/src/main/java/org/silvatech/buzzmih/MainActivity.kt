@@ -1,5 +1,6 @@
 package org.silvatech.buzzmih
 
+import android.content.Intent
 import android.os.Bundle
 import android.support.design.widget.Snackbar
 import android.support.design.widget.NavigationView
@@ -37,7 +38,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun loginButtonNHClicked(view: View){
-
+        val loginIntent = Intent(this, LoginActivity::class.java)
+        startActivity(loginIntent)
 
     }
 
@@ -48,7 +50,7 @@ class MainActivity : AppCompatActivity() {
 
     fun sendMessageBtnClicked(view: View){
 
-        
+
     }
 
 
