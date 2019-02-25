@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.view.View
 import kotlinx.android.synthetic.main.activity_create_user.*
 import org.silvatech.buzzmih.R
+import org.silvatech.buzzmih.Services.AuthService
 import java.util.*
 
 class CreateUserActivity : AppCompatActivity() {
@@ -37,6 +38,12 @@ class CreateUserActivity : AppCompatActivity() {
 
     fun createUserClicked(view: View){
 
+        AuthService.registerUser(this,"test1@silvatech.org","123456789") {
+            complete ->
+            if(complete){
+
+            }
+        }
 
     }
 
@@ -55,4 +62,5 @@ class CreateUserActivity : AppCompatActivity() {
         avatarColor = "[$savedR,$savedG],$savedB,1]"
 
     }
+
 }
