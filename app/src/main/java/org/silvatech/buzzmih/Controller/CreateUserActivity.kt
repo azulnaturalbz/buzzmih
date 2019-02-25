@@ -8,6 +8,7 @@ import kotlinx.android.synthetic.main.activity_create_user.*
 import kotlinx.android.synthetic.main.activity_login.*
 import org.silvatech.buzzmih.R
 import org.silvatech.buzzmih.Services.AuthService
+import org.silvatech.buzzmih.Services.UserDataService
 import java.util.*
 
 class CreateUserActivity : AppCompatActivity() {
@@ -39,6 +40,8 @@ class CreateUserActivity : AppCompatActivity() {
 
     fun createUserClicked(view: View){
 
+        val userName = createUsernameTxt.text.toString()
+
         val email = createEmailTxt.text.toString()
 
         val password = createPasswordTxt.text.toString()
@@ -50,6 +53,14 @@ class CreateUserActivity : AppCompatActivity() {
                     if(loginSuccess){
                         println(AuthService.authToken)
                         println(AuthService.userEmail)
+                        AuthService.createUser(this,userName,email,userAvatar,avatarColor){ createSuccess->
+                            if (createSuccess){
+                                println(UserDataService.avatarName)
+                                println(UserDataService.avatarColor)
+                                println(UserDataService.name)
+                                finish()
+                            }
+                        }
                     }
                 }
             }
