@@ -7,13 +7,19 @@ import com.android.volley.Response
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
+import org.json.JSONException
 import org.json.JSONObject
 import org.silvatech.buzzmih.Utilities.URL_REGISTER
 import org.silvatech.buzzmih.Utilities.URL_LOGIN
 
 object AuthService {
 
+    var isLoggedIn = false
+    var userEmail = ""
+    var authToken = ""
+
     fun registerUser(context: Context, email: String, password: String, complete: (Boolean) -> Unit) {
+
 
         val url = URL_REGISTER
 
@@ -53,6 +59,26 @@ object AuthService {
         val loginRequest = object: JsonObjectRequest(Method.POST, URL_LOGIN,null,Response.Listener { response ->
             // this is where we parse the json object
             println(response)
+
+            try {
+
+                userEmail = response.getString("user")
+
+                authToken = response.getString("token")
+
+                isLoggedIn = true
+
+                complete(true)
+
+            }catch (e:JSONException) {
+
+                Log.d("JSON","EXC: " + e.localizedMessage)
+
+                complete(false)
+            }
+
+
+
         },Response.ErrorListener {error ->
             // this is where we deal with out error
             Log.d("Error", "Could not register user: $error")
@@ -67,5 +93,6 @@ object AuthService {
                 return requestBody.toByteArray()
             }
         }
+        Volley.newRequestQueue(context).add(loginRequest)
     }
 }

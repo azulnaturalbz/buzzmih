@@ -5,6 +5,7 @@ import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
 import kotlinx.android.synthetic.main.activity_create_user.*
+import kotlinx.android.synthetic.main.activity_login.*
 import org.silvatech.buzzmih.R
 import org.silvatech.buzzmih.Services.AuthService
 import java.util.*
@@ -38,10 +39,19 @@ class CreateUserActivity : AppCompatActivity() {
 
     fun createUserClicked(view: View){
 
-        AuthService.registerUser(this,"test1@silvatech.org","123456789") {
-            complete ->
-            if(complete){
+        val email = createEmailTxt.text.toString()
 
+        val password = createPasswordTxt.text.toString()
+
+        AuthService.registerUser(this,email,password) { registerSuccess ->
+
+            if(registerSuccess){
+                AuthService.loginUser(this, email,password){loginSuccess ->
+                    if(loginSuccess){
+                        println(AuthService.authToken)
+                        println(AuthService.userEmail)
+                    }
+                }
             }
         }
 
