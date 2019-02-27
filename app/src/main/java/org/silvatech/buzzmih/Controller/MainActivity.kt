@@ -35,19 +35,23 @@ class MainActivity : AppCompatActivity() {
         drawer_layout.addDrawerListener(toggle)
         toggle.syncState()
 
-        LocalBroadcastManager.getInstance(this).registerReceiver(userDataChangeReceiver,
-            IntentFilter(BROADCAST_USER_DATA_CHANGE))
+        LocalBroadcastManager.getInstance(this).registerReceiver(
+            userDataChangeReceiver,
+            IntentFilter(BROADCAST_USER_DATA_CHANGE)
+        )
 
     }
 
     private val userDataChangeReceiver = object : BroadcastReceiver() {
 
         override fun onReceive(context: Context?, intent: Intent?) {
-            if (AuthService.isLoggedIn){
+            if (AuthService.isLoggedIn) {
                 userNameNH.text = UserDataService.name
                 userEmailNH.text = UserDataService.email
-                val resourceId = resources.getIdentifier(UserDataService.avatarName,"drawable",
-                    packageName)
+                val resourceId = resources.getIdentifier(
+                    UserDataService.avatarName, "drawable",
+                    packageName
+                )
                 userImageNH.setImageResource(resourceId)
                 userImageNH.setBackgroundColor(UserDataService.returnAvatarColor(UserDataService.avatarColor))
                 loginButtonNH.text = "logout"
@@ -63,18 +67,17 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun loginButtonNHClicked(view: View){
+    fun loginButtonNHClicked(view: View) {
 
-        if(AuthService.isLoggedIn){
-        // logout
+        if (AuthService.isLoggedIn) {
             UserDataService.logout()
-            userNameNH.text = "Login"
+            userNameNH.text = ""
             userEmailNH.text = ""
             userImageNH.setImageResource(R.drawable.profiledefault)
             userImageNH.setBackgroundColor(Color.TRANSPARENT)
             loginButtonNH.text = "Login"
 
-        }else{
+        } else {
 
             val loginIntent = Intent(this, LoginActivity::class.java)
             startActivity(loginIntent)
@@ -83,12 +86,12 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    fun addChannelClicked(view: View){
+    fun addChannelClicked(view: View) {
 
 
     }
 
-    fun sendMessageBtnClicked(view: View){
+    fun sendMessageBtnClicked(view: View) {
 
 
     }
