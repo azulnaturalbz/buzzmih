@@ -11,6 +11,7 @@ import android.support.v7.app.AppCompatActivity
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
+import io.socket.client.IO
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.app_bar_main.*
 import kotlinx.android.synthetic.main.nav_header_main.*
@@ -18,8 +19,11 @@ import org.silvatech.buzzmih.R
 import org.silvatech.buzzmih.Services.AuthService
 import org.silvatech.buzzmih.Services.UserDataService
 import org.silvatech.buzzmih.Utilities.BROADCAST_USER_DATA_CHANGE
+import org.silvatech.buzzmih.Utilities.SOCKET_URL
 
 class MainActivity : AppCompatActivity() {
+
+    val socket = IO.socket(SOCKET_URL)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,13 +38,26 @@ class MainActivity : AppCompatActivity() {
         )
         drawer_layout.addDrawerListener(toggle)
         toggle.syncState()
-        hideKeyboard()
 
+    }
+
+    override fun onResume() {
+        super.onResume()
         LocalBroadcastManager.getInstance(this).registerReceiver(
             userDataChangeReceiver,
             IntentFilter(BROADCAST_USER_DATA_CHANGE)
         )
+        socket.connect()
+    }
 
+    override fun onPause() {
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(userDataChangeReceiver)
+        super.onPause()
+    }
+
+    override fun onDestroy() {
+        socket.disconnect()
+        super.onDestroy()
     }
 
     private val userDataChangeReceiver = object : BroadcastReceiver() {
@@ -102,11 +119,11 @@ class MainActivity : AppCompatActivity() {
                     val channelDesc = descTextField.text.toString()
 
                     // create channel with channel name and description
-                    hideKeyboard()
+                    socket.emit("new channel", channelName,channelDesc)
                 }
                 .setNegativeButton("Cancel") {
                     dialog: DialogInterface?, which: Int ->
-                    hideKeyboard()
+
                 }
                 .show()
         }
@@ -115,7 +132,7 @@ class MainActivity : AppCompatActivity() {
 
     fun sendMessageBtnClicked(view: View) {
 
-
+    hideKeyboard()
     }
 
     fun hideKeyboard(){
