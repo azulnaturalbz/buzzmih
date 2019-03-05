@@ -12,11 +12,14 @@ import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import io.socket.client.IO
+import io.socket.emitter.Emitter
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.app_bar_main.*
 import kotlinx.android.synthetic.main.nav_header_main.*
+import org.silvatech.buzzmih.Models.Channel
 import org.silvatech.buzzmih.R
 import org.silvatech.buzzmih.Services.AuthService
+import org.silvatech.buzzmih.Services.MessageService
 import org.silvatech.buzzmih.Services.UserDataService
 import org.silvatech.buzzmih.Utilities.BROADCAST_USER_DATA_CHANGE
 import org.silvatech.buzzmih.Utilities.SOCKET_URL
@@ -29,6 +32,8 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
+        socket.connect()
+        socket.on("channelCreated" , onNewChannel)
 
 
         val toggle = ActionBarDrawerToggle(
@@ -47,16 +52,12 @@ class MainActivity : AppCompatActivity() {
             userDataChangeReceiver,
             IntentFilter(BROADCAST_USER_DATA_CHANGE)
         )
-        socket.connect()
-    }
 
-    override fun onPause() {
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(userDataChangeReceiver)
-        super.onPause()
     }
 
     override fun onDestroy() {
         socket.disconnect()
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(userDataChangeReceiver)
         super.onDestroy()
     }
 
@@ -128,6 +129,21 @@ class MainActivity : AppCompatActivity() {
                 .show()
         }
 
+    }
+
+    private val onNewChannel = Emitter.Listener { args ->
+        //println(args[0] as String)
+        runOnUiThread {
+            val channelName = args[0] as String
+            val channelDescription = args[1] as String
+            val channelId = args[2] as String
+
+            val newChannel = Channel(channelName,channelDescription,channelId)
+
+            MessageService.channels.add(newChannel)
+
+
+        }
     }
 
     fun sendMessageBtnClicked(view: View) {
