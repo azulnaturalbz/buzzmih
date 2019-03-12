@@ -1,6 +1,7 @@
 package org.silvatech.buzzmih.Services
 
 import android.graphics.Color
+import org.silvatech.buzzmih.Controller.App
 import java.util.*
 
 object UserDataService {
@@ -27,11 +28,11 @@ object UserDataService {
 
         name = ""
 
-        AuthService.authToken = ""
+        App.prefs.authToken = ""
 
-        AuthService.userEmail = ""
+        App.prefs.userEmail = ""
 
-        AuthService.isLoggedIn = false
+        App.prefs.isLoggedIn = false
     }
 
     fun returnAvatarColor(components: String): Int {

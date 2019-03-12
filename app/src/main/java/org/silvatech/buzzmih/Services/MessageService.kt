@@ -6,6 +6,7 @@ import com.android.volley.Response
 import com.android.volley.toolbox.JsonArrayRequest
 import com.android.volley.toolbox.Volley
 import org.json.JSONException
+import org.silvatech.buzzmih.Controller.App
 import org.silvatech.buzzmih.Models.Channel
 import org.silvatech.buzzmih.Utilities.URL_GET_CHANNELS
 
@@ -52,10 +53,10 @@ object MessageService {
 
                 override fun getHeaders(): MutableMap<String, String> {
                     val headers = HashMap<String, String>()
-                    headers.put("Authorization", "Bearer ${AuthService.authToken}")
+                    headers.put("Authorization", "Bearer ${App.prefs.authToken}")
                     return headers
                 }
             }
-        Volley.newRequestQueue(context).add(channelsRequest)
+        App.prefs.requestQueue.add(channelsRequest)
     }
 }
