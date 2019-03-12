@@ -10,8 +10,10 @@ import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.view.View
 import android.view.inputmethod.InputMethodManager
+import android.widget.ArrayAdapter
 import android.widget.EditText
 import io.socket.client.IO
+import io.socket.client.Socket
 import io.socket.emitter.Emitter
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.app_bar_main.*
@@ -28,6 +30,14 @@ class MainActivity : AppCompatActivity() {
 
     val socket = IO.socket(SOCKET_URL)
 
+    lateinit var channelAdapter: ArrayAdapter<Channel>
+
+    private fun setupAdapters(){
+
+        channelAdapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, MessageService.channels)
+        channel_list.adapter = channelAdapter
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -43,15 +53,17 @@ class MainActivity : AppCompatActivity() {
         )
         drawer_layout.addDrawerListener(toggle)
         toggle.syncState()
+        setupAdapters()
 
     }
 
     override fun onResume() {
-        super.onResume()
+
         LocalBroadcastManager.getInstance(this).registerReceiver(
             userDataChangeReceiver,
             IntentFilter(BROADCAST_USER_DATA_CHANGE)
         )
+        super.onResume()
 
     }
 
@@ -63,7 +75,7 @@ class MainActivity : AppCompatActivity() {
 
     private val userDataChangeReceiver = object : BroadcastReceiver() {
 
-        override fun onReceive(context: Context?, intent: Intent?) {
+        override fun onReceive(context: Context, intent: Intent?) {
             if (AuthService.isLoggedIn) {
                 userNameNH.text = UserDataService.name
                 userEmailNH.text = UserDataService.email
@@ -74,6 +86,13 @@ class MainActivity : AppCompatActivity() {
                 userImageNH.setImageResource(resourceId)
                 userImageNH.setBackgroundColor(UserDataService.returnAvatarColor(UserDataService.avatarColor))
                 loginButtonNH.text = "logout"
+
+                MessageService.getChannels(context) {complete ->
+
+                    if(complete){
+                        channelAdapter.notifyDataSetChanged()
+                    }
+                }
             }
         }
     }
@@ -109,21 +128,19 @@ class MainActivity : AppCompatActivity() {
         
         if (AuthService.isLoggedIn){
             val builder = AlertDialog.Builder(this)
-            val dialogView = layoutInflater.inflate(R.layout.add_channel_dialog,null)
+            val dialogView = layoutInflater.inflate(R.layout.add_channel_dialog, null)
             
             builder.setView(dialogView)
-                .setPositiveButton("Add") {
-                    dialog: DialogInterface?, which: Int ->
+                .setPositiveButton("Add") { dialogInterface, i ->
                     val nameTextField = dialogView.findViewById<EditText>(R.id.addChannelNameTxt)
                     val descTextField = dialogView.findViewById<EditText>(R.id.addChannelDescTxt)
                     val channelName = nameTextField.text.toString()
                     val channelDesc = descTextField.text.toString()
 
                     // create channel with channel name and description
-                    socket.emit("new channel", channelName,channelDesc)
+                    socket.emit("newChannel", channelName,channelDesc)
                 }
-                .setNegativeButton("Cancel") {
-                    dialog: DialogInterface?, which: Int ->
+                .setNegativeButton("Cancel") { dialogInterface, i ->
 
                 }
                 .show()
@@ -138,9 +155,11 @@ class MainActivity : AppCompatActivity() {
             val channelDescription = args[1] as String
             val channelId = args[2] as String
 
-            val newChannel = Channel(channelName,channelDescription,channelId)
+            val newChannel = Channel(channelName, channelDescription, channelId)
 
             MessageService.channels.add(newChannel)
+
+            channelAdapter.notifyDataSetChanged()
 
 
         }
