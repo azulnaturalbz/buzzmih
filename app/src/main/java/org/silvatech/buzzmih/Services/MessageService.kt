@@ -8,11 +8,14 @@ import com.android.volley.toolbox.Volley
 import org.json.JSONException
 import org.silvatech.buzzmih.Controller.App
 import org.silvatech.buzzmih.Models.Channel
+import org.silvatech.buzzmih.Models.Message
 import org.silvatech.buzzmih.Utilities.URL_GET_CHANNELS
 
 object MessageService {
 
     val channels = ArrayList<Channel>()
+    val message = ArrayList<Message>()
+
 
     fun getChannels(complete: (Boolean) -> Unit) {
 

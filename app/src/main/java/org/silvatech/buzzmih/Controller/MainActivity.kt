@@ -21,6 +21,7 @@ import kotlinx.android.synthetic.main.app_bar_main.*
 import kotlinx.android.synthetic.main.content_main.*
 import kotlinx.android.synthetic.main.nav_header_main.*
 import org.silvatech.buzzmih.Models.Channel
+import org.silvatech.buzzmih.Models.Message
 import org.silvatech.buzzmih.R
 import org.silvatech.buzzmih.Services.AuthService
 import org.silvatech.buzzmih.Services.MessageService
@@ -34,9 +35,9 @@ class MainActivity : AppCompatActivity() {
 
     lateinit var channelAdapter: ArrayAdapter<Channel>
 
-    var selectedChannel : Channel? = null
+    var selectedChannel: Channel? = null
 
-    private fun setupAdapters(){
+    private fun setupAdapters() {
 
         channelAdapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, MessageService.channels)
         channel_list.adapter = channelAdapter
@@ -47,7 +48,8 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
         socket.connect()
-        socket.on("channelCreated" , onNewChannel)
+        socket.on("channelCreated", onNewChannel)
+        socket.on("messageCreated", onNewMessage)
 
 
         val toggle = ActionBarDrawerToggle(
@@ -59,14 +61,14 @@ class MainActivity : AppCompatActivity() {
         toggle.syncState()
         setupAdapters()
 
-        channel_list.setOnItemClickListener{parent: AdapterView<*>?, view: View?, position: Int, id: Long ->
+        channel_list.setOnItemClickListener { parent: AdapterView<*>?, view: View?, position: Int, id: Long ->
             selectedChannel = MessageService.channels[position]
             drawer_layout.closeDrawer(GravityCompat.START)
             updateWithChannel()
         }
 
-        if(App.prefs.isLoggedIn){
-            AuthService.findUserByEmail(this){}
+        if (App.prefs.isLoggedIn) {
+            AuthService.findUserByEmail(this) {}
         }
 
     }
@@ -101,11 +103,11 @@ class MainActivity : AppCompatActivity() {
                 userImageNH.setBackgroundColor(UserDataService.returnAvatarColor(UserDataService.avatarColor))
                 loginButtonNH.text = "logout"
 
-                MessageService.getChannels {complete ->
+                MessageService.getChannels { complete ->
 
-                    if(complete){
+                    if (complete) {
 
-                        if(MessageService.channels.count() > 0) {
+                        if (MessageService.channels.count() > 0) {
 
                             selectedChannel = MessageService.channels[0]
                             channelAdapter.notifyDataSetChanged()
@@ -118,7 +120,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun updateWithChannel(){
+    fun updateWithChannel() {
 
         textView.text = "#${selectedChannel?.name}"
         // Download messages for channel
@@ -153,11 +155,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun addChannelClicked(view: View) {
-        
-        if (App.prefs.isLoggedIn){
+
+        if (App.prefs.isLoggedIn) {
             val builder = AlertDialog.Builder(this)
             val dialogView = layoutInflater.inflate(R.layout.add_channel_dialog, null)
-            
+
             builder.setView(dialogView)
                 .setPositiveButton("Add") { dialogInterface, i ->
                     val nameTextField = dialogView.findViewById<EditText>(R.id.addChannelNameTxt)
@@ -166,7 +168,7 @@ class MainActivity : AppCompatActivity() {
                     val channelDesc = descTextField.text.toString()
 
                     // create channel with channel name and description
-                    socket.emit("newChannel", channelName,channelDesc)
+                    socket.emit("newChannel", channelName, channelDesc)
                 }
                 .setNegativeButton("Cancel") { dialogInterface, i ->
 
@@ -193,16 +195,45 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun sendMessageBtnClicked(view: View) {
+    private val onNewMessage = Emitter.Listener { args ->
+        runOnUiThread {
+            val msgBody = args[0] as String
+            val channelId = args[2] as String
+            val userName = args[3] as String
+            val userAvatar = args[4] as String
+            val userAvatarColor = args[5] as String
+            val id = args[6] as String
+            val timeStamp = args[7] as String
 
-    hideKeyboard()
+            val newMessage = Message(msgBody,userName,channelId,userAvatar,userAvatarColor,id,timeStamp)
+            MessageService.message.add(newMessage)
+
+
+
+        }
     }
 
-    fun hideKeyboard(){
+    fun sendMessageBtnClicked(view: View) {
+
+        if (App.prefs.isLoggedIn && messageTextField.text.isNotEmpty() && selectedChannel != null) {
+            val userId = UserDataService.id
+            val channelId = selectedChannel!!.id
+            socket.emit(
+                "newMessage", messageTextField.text.toString(), userId, channelId,
+                UserDataService.name, UserDataService.avatarName, UserDataService.avatarColor
+            )
+
+            messageTextField.text.clear()
+            hideKeyboard()
+        }
+        hideKeyboard()
+    }
+
+    fun hideKeyboard() {
         val inputManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
 
-        if(inputManager.isAcceptingText){
-            inputManager.hideSoftInputFromWindow(currentFocus.windowToken,0)
+        if (inputManager.isAcceptingText) {
+            inputManager.hideSoftInputFromWindow(currentFocus.windowToken, 0)
         }
     }
 
