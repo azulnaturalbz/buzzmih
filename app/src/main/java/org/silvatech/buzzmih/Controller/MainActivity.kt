@@ -10,6 +10,7 @@ import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.view.View
 import android.view.inputmethod.InputMethodManager
+import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.EditText
 import io.socket.client.IO
@@ -17,6 +18,7 @@ import io.socket.client.Socket
 import io.socket.emitter.Emitter
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.app_bar_main.*
+import kotlinx.android.synthetic.main.content_main.*
 import kotlinx.android.synthetic.main.nav_header_main.*
 import org.silvatech.buzzmih.Models.Channel
 import org.silvatech.buzzmih.R
@@ -31,6 +33,8 @@ class MainActivity : AppCompatActivity() {
     val socket = IO.socket(SOCKET_URL)
 
     lateinit var channelAdapter: ArrayAdapter<Channel>
+
+    var selectedChannel : Channel? = null
 
     private fun setupAdapters(){
 
@@ -54,6 +58,12 @@ class MainActivity : AppCompatActivity() {
         drawer_layout.addDrawerListener(toggle)
         toggle.syncState()
         setupAdapters()
+
+        channel_list.setOnItemClickListener{parent: AdapterView<*>?, view: View?, position: Int, id: Long ->
+            selectedChannel = MessageService.channels[position]
+            drawer_layout.closeDrawer(GravityCompat.START)
+            updateWithChannel()
+        }
 
         if(App.prefs.isLoggedIn){
             AuthService.findUserByEmail(this){}
@@ -91,14 +101,28 @@ class MainActivity : AppCompatActivity() {
                 userImageNH.setBackgroundColor(UserDataService.returnAvatarColor(UserDataService.avatarColor))
                 loginButtonNH.text = "logout"
 
-                MessageService.getChannels(context) {complete ->
+                MessageService.getChannels {complete ->
 
                     if(complete){
-                        channelAdapter.notifyDataSetChanged()
+
+                        if(MessageService.channels.count() > 0) {
+
+                            selectedChannel = MessageService.channels[0]
+                            channelAdapter.notifyDataSetChanged()
+                            updateWithChannel()
+
+                        }
                     }
                 }
             }
         }
+    }
+
+    fun updateWithChannel(){
+
+        textView.text = "#${selectedChannel?.name}"
+        // Download messages for channel
+
     }
 
     override fun onBackPressed() {
