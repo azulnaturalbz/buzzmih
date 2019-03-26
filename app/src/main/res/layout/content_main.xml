@@ -18,13 +18,12 @@
             app:layout_constraintTop_toTopOf="parent" android:layout_marginTop="8dp" android:textAlignment="center"
             android:id="@+id/mainChannelName" android:textSize="18sp" android:textStyle="bold"/>
     <android.support.v7.widget.RecyclerView
-            android:layout_width="395dp"
-            android:layout_height="587dp" app:layout_constraintTop_toBottomOf="@+id/mainChannelName"
+            android:layout_width="0dp"
+            android:layout_height="0dp" app:layout_constraintTop_toBottomOf="@+id/mainChannelName"
             app:layout_constraintEnd_toEndOf="parent" android:layout_marginEnd="8dp"
             app:layout_constraintStart_toStartOf="parent" android:layout_marginStart="8dp"
             android:layout_marginBottom="8dp" app:layout_constraintBottom_toTopOf="@+id/messageTextField"
-            android:id="@+id/messageListView">
-    </android.support.v7.widget.RecyclerView>
+            android:id="@+id/messageListView"/>
     <EditText
             android:layout_width="0dp"
             android:layout_height="wrap_content"
