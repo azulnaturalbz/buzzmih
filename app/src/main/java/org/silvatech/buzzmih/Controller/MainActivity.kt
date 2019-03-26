@@ -15,7 +15,6 @@ import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.EditText
 import io.socket.client.IO
-import io.socket.client.Socket
 import io.socket.emitter.Emitter
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.app_bar_main.*
@@ -70,6 +69,11 @@ class MainActivity : AppCompatActivity() {
         toggle.syncState()
         setupAdapters()
 
+        LocalBroadcastManager.getInstance(this).registerReceiver(
+            userDataChangeReceiver,
+            IntentFilter(BROADCAST_USER_DATA_CHANGE)
+        )
+
         channel_list.setOnItemClickListener { parent: AdapterView<*>?, view: View?, position: Int, id: Long ->
             selectedChannel = MessageService.channels[position]
             drawer_layout.closeDrawer(GravityCompat.START)
@@ -82,15 +86,6 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    override fun onResume() {
-
-        LocalBroadcastManager.getInstance(this).registerReceiver(
-            userDataChangeReceiver,
-            IntentFilter(BROADCAST_USER_DATA_CHANGE)
-        )
-        super.onResume()
-
-    }
 
     override fun onDestroy() {
         socket.disconnect()
@@ -131,7 +126,7 @@ class MainActivity : AppCompatActivity() {
 
     fun updateWithChannel() {
 
-        textView.text = "#${selectedChannel?.name}"
+        mainChannelName.text = "#${selectedChannel?.name}"
         // Download messages for channel
         if(selectedChannel != null) {
             MessageService.getMessages(selectedChannel!!.id){complete ->
@@ -164,6 +159,7 @@ class MainActivity : AppCompatActivity() {
             userImageNH.setImageResource(R.drawable.profiledefault)
             userImageNH.setBackgroundColor(Color.TRANSPARENT)
             loginButtonNH.text = "Login"
+            mainChannelName.text = "Please log in"
 
         } else {
 
